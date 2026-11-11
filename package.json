@@ -1,0 +1,47 @@
+{
+  "name": "lumo",
+  "productName": "Lumo",
+  "version": "1.0.0",
+  "description": "Lumo - Chat-App fuer Freunde und Communities",
+  "author": "Lumo",
+  "main": "main.js",
+  "private": true,
+  "repository": "github:anonym77701-ui/lumo-app",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --win squirrel --publish never"
+  },
+  "dependencies": {
+    "electron-squirrel-startup": "^1.0.1",
+    "update-electron-app": "^3.0.0"
+  },
+  "devDependencies": {
+    "electron": "^33.0.0",
+    "electron-builder": "^25.1.8",
+    "electron-builder-squirrel-windows": "^25.1.8"
+  },
+  "build": {
+    "appId": "com.squirrel.lumo.Lumo",
+    "productName": "Lumo",
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "offline.html",
+      "package.json",
+      "build/icon.png"
+    ],
+    "win": {
+      "target": "squirrel",
+      "icon": "build/icon.ico"
+    },
+    "squirrelWindows": {
+      "artifactName": "Lumo-Setup.${ext}",
+      "loadingGif": "build/install.gif",
+      "iconUrl": "https://raw.githubusercontent.com/anonym77701-ui/lumo-app/main/build/icon.ico"
+    }
+  }
+}
