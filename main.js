@@ -123,13 +123,15 @@ ipcMain.on('lumo:loggedOut', () => { if (mainWin) { const w = mainWin; mainWin =
 ipcMain.on('lumo:show', showMain);
 ipcMain.on('lumo:badge', (_e, n) => { try { app.setBadgeCount(n) } catch (_) { } if (tray) tray.setToolTip(n ? `Lumo – ${n} ungelesen` : 'Lumo'); if (mainWin && process.platform === 'win32') mainWin.flashFrame(!!n && !mainWin.isFocused()); });
 ipcMain.handle('lumo:version', () => app.getVersion());
-// Spielerkennung: laufende Programme (bleibt auf dem PC, nur Lumo sieht die Namen)
+// Spielerkennung wie bei Discord: nur Programme mit einem echten Fenster (also sichtbar in der Taskleiste).
+// Reste im Hintergrund (z. B. Roblox nach dem Schließen) zählen NICHT als „spielt gerade“.
 ipcMain.handle('lumo:procs', () => new Promise(res => {
   if (process.platform !== 'win32') return res([]);
-  require('child_process').execFile('tasklist', ['/fo', 'csv', '/nh'], { windowsHide: true, maxBuffer: 4 << 20 }, (err, out) => {
+  const ps = "Get-Process | Where-Object { $_.MainWindowHandle -ne 0 -and $_.MainWindowTitle -ne '' } | ForEach-Object { $_.ProcessName }";
+  require('child_process').execFile('powershell.exe', ['-NoProfile', '-NonInteractive', '-WindowStyle', 'Hidden', '-Command', ps], { windowsHide: true, maxBuffer: 4 << 20, timeout: 8000 }, (err, out) => {
     if (err) return res([]);
     const s = new Set();
-    String(out).split(/\r?\n/).forEach(l => { const m = l.match(/^"([^"]+)"/); if (m) s.add(m[1].toLowerCase()); });
+    String(out).split(/\r?\n/).forEach(l => { const n = l.trim().toLowerCase(); if (n) s.add(n.endsWith('.exe') ? n : n + '.exe'); });
     res([...s]);
   });
 }));
