@@ -1,0 +1,36 @@
+name: Lumo Windows-App bauen
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Version aus dem Release übernehmen
+        if: github.event_name == 'release'
+        shell: bash
+        run: |
+          V="${{ github.event.release.tag_name }}"; V="${V#v}"
+          npm pkg set version="$V"
+      - run: npm install
+      - run: npm run dist
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Lumo-Setup
+          path: dist/squirrel-windows/*
+      - name: Dateien an das Release hängen
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.release.tag_name }}
+          files: |
+            dist/squirrel-windows/Lumo-Setup.exe
+            dist/squirrel-windows/*.nupkg
+            dist/squirrel-windows/RELEASES
