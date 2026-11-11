@@ -85,6 +85,39 @@ function openMain(isNew) {
   makeTray();
 }
 
+// Die alte Lumo-App (Lumo-Setup.exe vor 2.0) automatisch entfernen, damit es nur noch eine Lumo-App gibt
+function removeOldApp() {
+  if (process.platform !== 'win32' || !app.isPackaged) return;
+  const la = process.env.LOCALAPPDATA, ad = process.env.APPDATA, up = process.env.USERPROFILE;
+  if (!la) return;
+  const oldDir = path.join(la, 'Programs', 'Lumo'), oldExe = path.join(oldDir, 'Lumo.exe');
+  const isOld = t => !!t && /\\Programs\\Lumo\\Lumo\.exe$/i.test(t);
+  const stub = path.resolve(path.dirname(process.execPath), '..', 'Lumo.exe');   // Startdatei der neuen App
+  const links = [path.join(up || '', 'Desktop', 'Lumo.lnk'), path.join(ad || '', 'Microsoft', 'Windows', 'Start Menu', 'Programs', 'Lumo.lnk')];
+  try { const d = app.getPath('desktop'); if (!links.includes(path.join(d, 'Lumo.lnk'))) links.push(path.join(d, 'Lumo.lnk')) } catch (_) { }
+  for (const l of links) {
+    try {
+      if (!fs.existsSync(l)) continue;
+      const t = shell.readShortcutLink(l).target;
+      if (!isOld(t)) continue;
+      if (/Start Menu/i.test(l)) fs.rmSync(l, { force: true });
+      else if (fs.existsSync(stub)) shell.writeShortcutLink(l, 'replace', { target: stub, cwd: path.dirname(stub), icon: stub, iconIndex: 0, appUserModelId: 'com.squirrel.lumo.Lumo', description: 'Lumo' });
+    } catch (_) { }
+  }
+  if (!fs.existsSync(oldExe)) return;
+  const cp = require('child_process');
+  const ps = "Get-Process -Name Lumo -ErrorAction SilentlyContinue | Where-Object { $_.Path -like '*\\Programs\\Lumo\\Lumo.exe' } | Stop-Process -Force";
+  cp.execFile('powershell.exe', ['-NoProfile', '-NonInteractive', '-WindowStyle', 'Hidden', '-Command', ps], { windowsHide: true }, () => {
+    setTimeout(() => {
+      try { fs.rmSync(oldDir, { recursive: true, force: true }) } catch (_) { }
+      const key = 'HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Lumo';
+      cp.execFile('reg', ['query', key, '/v', 'UninstallString'], { windowsHide: true }, (e, out) => {
+        if (!e && /Programs\\Lumo\\Lumo\.exe/i.test(String(out))) cp.execFile('reg', ['delete', key, '/f'], { windowsHide: true }, () => { });
+      });
+    }, 1500);
+  });
+}
+
 ipcMain.on('lumo:authed', (_e, isNew) => { if (!mainWin) openMain(!!isNew); });
 ipcMain.on('lumo:loggedOut', () => { if (mainWin) { const w = mainWin; mainWin = null; saveBounds(w); w.destroy(); } openAuth(); });
 ipcMain.on('lumo:show', showMain);
@@ -128,6 +161,7 @@ app.whenReady().then(() => {
     } catch (_) { cb({}); }
   });
   openAuth();
+  setTimeout(removeOldApp, 4000);
 });
 app.on('second-instance', showMain);
 app.on('before-quit', () => { quitting = true; });
