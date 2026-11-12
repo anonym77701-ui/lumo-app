@@ -185,13 +185,19 @@ function ovEnsure() {
   ovPlace(); return ovWin;
 }
 function ovUpdate() {
-  const want = ovData.on && !ovHidden && ovData.users && ovData.users.length;
+  const lumoActive = BrowserWindow.getAllWindows().some(w => w !== ovWin && !w.isDestroyed() && w.isFocused());
+  const want = ovData.on && !ovHidden && !lumoActive && ovData.users && ovData.users.length;
   if (!want) { if (ovWin) ovWin.hide(); return; }
   ovEnsure(); if ((ovData.pos || 'tl') !== ovPos) ovPlace();
   ovWin.webContents.send('ov:data', ovData);
   if (!ovWin.isVisible()) ovWin.showInactive();
 }
 ipcMain.on('lumo:overlay', (_e, d) => { ovData = d && typeof d === 'object' ? d : { on: false }; ovUpdate(); });
+// Nur zeigen, wenn Lumo NICHT das aktive Fenster ist (Spiel, YouTube, andere Programme)
+let ovFocusT = null;
+const ovRecheck = () => { clearTimeout(ovFocusT); ovFocusT = setTimeout(ovUpdate, 80); };
+app.on('browser-window-focus', ovRecheck);
+app.on('browser-window-blur', ovRecheck);
 app.whenReady().then(() => {
   try { globalShortcut.register('CommandOrControl+Shift+O', () => { ovHidden = !ovHidden; ovUpdate(); }); } catch (_) { }
 });
