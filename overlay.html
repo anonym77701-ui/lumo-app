@@ -1,0 +1,25 @@
+<!doctype html><html lang="de"><head><meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src https: data:; style-src 'unsafe-inline'; script-src 'unsafe-inline'">
+<style>
+html,body{margin:0;background:transparent;overflow:hidden;font-family:'Segoe UI',system-ui,sans-serif;-webkit-user-select:none;user-select:none}
+#box{display:inline-flex;flex-direction:column;gap:4px;padding:8px;border-radius:12px;background:rgba(10,14,16,.55)}
+body.b #box{position:absolute;bottom:0}body.r #box{position:absolute;right:0}
+.h{font-size:11px;font-weight:700;color:rgba(255,255,255,.65);padding:0 4px 2px;display:flex;align-items:center;gap:5px;max-width:250px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.h i{width:7px;height:7px;border-radius:50%;background:#2BD9C0;flex:none}
+.u{display:flex;align-items:center;gap:8px;padding:3px 10px 3px 3px;border-radius:999px;background:rgba(0,0,0,.45);color:#fff;font-size:13.5px;font-weight:600;width:max-content;max-width:250px;transition:background .15s}
+.u.s{background:rgba(43,217,192,.28)}
+.a{width:28px;height:28px;border-radius:50%;flex:none;display:grid;place-items:center;font-size:12px;font-weight:800;overflow:hidden;box-shadow:0 0 0 2px transparent;transition:box-shadow .12s}
+.u.s .a{box-shadow:0 0 0 2px #3DD68C}
+.a img{width:100%;height:100%;object-fit:cover}
+.n{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-shadow:0 1px 2px rgba(0,0,0,.8)}
+.ic{font-size:12px;opacity:.85}
+</style></head><body><div id="box"></div>
+<script>
+const box=document.getElementById('box');
+const esc=s=>String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+window.lumoOverlay.onData(d=>{
+  const p=(d&&d.pos)||'tl';document.body.className=(p[0]==='b'?'b ':'')+(p[1]==='r'?'r':'');
+  if(!d||!d.on||!d.users||!d.users.length){box.innerHTML='';return}
+  box.innerHTML=`<div class="h"><i></i>${esc(d.ch)}${d.srv?' · '+esc(d.srv):''}</div>`+d.users.map(u=>`<div class="u ${u.spk?'s':''}"><span class="a" style="background:${esc(u.c||'#5865F2')}">${u.a&&/^https:/.test(u.a)?`<img src="${esc(u.a)}">`:esc((u.n||'?')[0])}</span><span class="n">${esc(u.n)}</span>${u.d?'<span class="ic">🔇</span>':u.m?'<span class="ic">🎙️✕</span>':''}</div>`).join('');
+});
+</script></body></html>

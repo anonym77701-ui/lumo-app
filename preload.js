@@ -9,5 +9,6 @@ contextBridge.exposeInMainWorld('lumoDesktop', {
   getProcs: () => ipcRenderer.invoke('lumo:procs'),
   show: () => ipcRenderer.send('lumo:show'),
   badge: n => ipcRenderer.send('lumo:badge', n | 0),
-  version: () => ipcRenderer.invoke('lumo:version')
+  version: () => ipcRenderer.invoke('lumo:version'),
+  overlay: data => ipcRenderer.send('lumo:overlay', data)
 });

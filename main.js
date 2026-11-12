@@ -2,7 +2,7 @@
 // Öffnet https://lumo-chatcom.netlify.app in einem eigenen Fenster. Neue Lumo-Versionen auf der Website kommen automatisch an.
 // Erst ein kleines Anmelde-Fenster, danach das große Lumo-Fenster.
 // Beim Schließen läuft Lumo unten rechts in der Taskleiste weiter, damit Benachrichtigungen ankommen.
-const { app, BrowserWindow, shell, session, desktopCapturer, Menu, ipcMain, nativeImage, Tray, Notification } = require('electron');
+const { app, BrowserWindow, shell, session, desktopCapturer, Menu, ipcMain, nativeImage, Tray, Notification, screen, globalShortcut } = require('electron');
 const path = require('path');
 const fs = require('fs');
 
@@ -165,6 +165,39 @@ app.whenReady().then(() => {
   openAuth();
   setTimeout(removeOldApp, 4000);
 });
+// ---------- Ingame-Overlay: zeigt beim Zocken, wer im Call spricht ----------
+let ovWin = null, ovData = { on: false }, ovHidden = false, ovPos = '';
+function ovPlace() {
+  if (!ovWin) return; const wa = screen.getPrimaryDisplay().workArea; const W = 280, H = 420, m = 16; const p = ovData.pos || 'tl';
+  const x = p.endsWith('r') ? wa.x + wa.width - W - m : wa.x + m; const y = p.startsWith('b') ? wa.y + wa.height - H - m : wa.y + m;
+  ovWin.setBounds({ x, y, width: W, height: H }); ovPos = p;
+}
+function ovEnsure() {
+  if (ovWin) return ovWin;
+  ovWin = new BrowserWindow({ width: 280, height: 420, frame: false, transparent: true, resizable: false, movable: false, focusable: false, skipTaskbar: true,
+    alwaysOnTop: true, hasShadow: false, show: false, backgroundColor: '#00000000',
+    webPreferences: { preload: path.join(__dirname, 'ovpreload.js'), contextIsolation: true, nodeIntegration: false, backgroundThrottling: false } });
+  ovWin.setAlwaysOnTop(true, 'screen-saver'); ovWin.setIgnoreMouseEvents(true, { forward: true });
+  try { ovWin.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true }) } catch (_) { }
+  ovWin.loadFile(path.join(__dirname, 'overlay.html'));
+  ovWin.webContents.on('did-finish-load', () => ovWin && ovWin.webContents.send('ov:data', ovData));
+  ovWin.on('closed', () => { ovWin = null; });
+  ovPlace(); return ovWin;
+}
+function ovUpdate() {
+  const want = ovData.on && !ovHidden && ovData.users && ovData.users.length;
+  if (!want) { if (ovWin) ovWin.hide(); return; }
+  ovEnsure(); if ((ovData.pos || 'tl') !== ovPos) ovPlace();
+  ovWin.webContents.send('ov:data', ovData);
+  if (!ovWin.isVisible()) ovWin.showInactive();
+}
+ipcMain.on('lumo:overlay', (_e, d) => { ovData = d && typeof d === 'object' ? d : { on: false }; ovUpdate(); });
+app.whenReady().then(() => {
+  try { globalShortcut.register('CommandOrControl+Shift+O', () => { ovHidden = !ovHidden; ovUpdate(); }); } catch (_) { }
+});
+app.on('will-quit', () => { try { globalShortcut.unregisterAll() } catch (_) { } if (ovWin) { try { ovWin.destroy() } catch (_) { } } });
+
 app.on('second-instance', showMain);
 app.on('before-quit', () => { quitting = true; });
 app.on('window-all-closed', () => { if (quitting || !tray) app.quit(); });
+app.on('browser-window-created', () => { });

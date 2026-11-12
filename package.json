@@ -1,7 +1,7 @@
 {
   "name": "lumo",
   "productName": "Lumo",
-  "version": "1.0.0",
+  "version": "1.0.3",
   "description": "Lumo - Chat-App fuer Freunde und Communities",
   "author": "Lumo",
   "main": "main.js",
@@ -28,11 +28,13 @@
       "buildResources": "build"
     },
     "files": [
+      "build/icon.png",
       "main.js",
-      "preload.js",
       "offline.html",
+      "overlay.html",
+      "ovpreload.js",
       "package.json",
-      "build/icon.png"
+      "preload.js"
     ],
     "win": {
       "target": "squirrel",
