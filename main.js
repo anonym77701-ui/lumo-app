@@ -1,5 +1,5 @@
 // Lumo Desktop (Electron)
-// Öffnet https://lumo-chatcom.netlify.app in einem eigenen Fenster. Neue Lumo-Versionen auf der Website kommen automatisch an.
+// Öffnet https://lumo-chat.pages.dev in einem eigenen Fenster. Neue Lumo-Versionen auf der Website kommen automatisch an.
 // Erst ein kleines Anmelde-Fenster, danach das große Lumo-Fenster.
 // Beim Schließen läuft Lumo unten rechts in der Taskleiste weiter, damit Benachrichtigungen ankommen.
 const { app, BrowserWindow, shell, session, desktopCapturer, Menu, ipcMain, nativeImage, Tray, Notification, screen, globalShortcut } = require('electron');
@@ -10,7 +10,7 @@ if (require('electron-squirrel-startup')) { app.quit(); return; }
 if (!app.requestSingleInstanceLock()) { app.quit(); return; }
 app.setAppUserModelId('com.squirrel.lumo.Lumo');
 
-const SITE = 'https://lumo-chatcom.netlify.app/';
+const SITE = 'https://lumo-chat.pages.dev/';
 const ORIGIN = new URL(SITE).origin;
 const ICON = nativeImage.createFromPath(path.join(__dirname, 'build', 'icon.png'));
 const BG = '#05090a';

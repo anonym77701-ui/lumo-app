@@ -1,7 +1,7 @@
 {
   "name": "lumo",
   "productName": "Lumo",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Lumo - Chat-App fuer Freunde und Communities",
   "author": "Lumo",
   "main": "main.js",

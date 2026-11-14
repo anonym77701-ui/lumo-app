@@ -3,4 +3,4 @@
 img{width:96px;height:96px;border-radius:24px;box-shadow:0 0 40px rgba(43,217,192,.35)}h2{margin:22px 0 6px}p{color:#8caaa6;margin:0 0 22px}
 button{border:0;border-radius:10px;padding:11px 22px;background:#2BD9C0;color:#04211d;font-weight:800;font-size:14px;cursor:pointer}</style></head>
 <body><div><img src="build/icon.png" alt=""><h2>Keine Verbindung</h2><p>Lumo konnte nicht geladen werden. Prüfe deine Internetverbindung.</p><button onclick="go()">Erneut versuchen</button></div>
-<script>const to=new URLSearchParams(location.search).get('to')||'https://lumo-chatcom.netlify.app/?app=1';function go(){location.href=to}setInterval(()=>{if(navigator.onLine)fetch(to,{mode:'no-cors'}).then(go).catch(()=>{})},5000)</script></body></html>
+<script>const to=new URLSearchParams(location.search).get('to')||'https://lumo-chat.pages.dev/?app=1';function go(){location.href=to}setInterval(()=>{if(navigator.onLine)fetch(to,{mode:'no-cors'}).then(go).catch(()=>{})},5000)</script></body></html>
